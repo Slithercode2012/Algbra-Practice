@@ -5,62 +5,115 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Standard Calculator</title>
     <style>
+        :root {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --screen-bg: #090d16;
+            --btn-normal: #334155;
+            --btn-hover: #475569;
+            --btn-operator: #f97316;
+            --btn-operator-hover: #ea580c;
+            --btn-clear: #ef4444;
+            --btn-clear-hover: #dc2626;
+            --text: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
         body {
-            background-color: #0f172a;
-            color: #ffffff;
-            font-family: system-ui, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            margin: 0;
+            padding: 20px;
         }
+
+        /* Calculator Body Framework */
         .calc-box {
-            background-color: #1e293b;
+            background-color: var(--surface);
             padding: 25px;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-            width: 300px;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), border-color 0.2s;
+            width: 100%;
+            max-width: 320px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
+
+        /* Responsive Display Panel */
         .display {
-            background-color: #0f172a;
-            padding: 15px;
-            border-radius: 10px;
-            font-size: 2rem;
+            background-color: var(--screen-bg);
+            color: #4ade80; /* Clean green digital font look */
+            padding: 20px;
+            border-radius: 14px;
+            font-size: 2.25rem;
             text-align: right;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-            min-height: 40px;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            border: 1px solid rgba(255, 255, 255, 0.02);
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
         }
+
+        /* Grid Framework for Buttons */
         .grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
+            gap: 14px;
         }
+
         button {
-            background-color: #334155;
-            color: white;
+            background-color: var(--btn-normal);
+            color: var(--text);
             border: none;
-            padding: 15px;
-            font-size: 1.25rem;
-            border-radius: 10px;
+            padding: 18px 0;
+            font-size: 1.4rem;
+            border-radius: 12px;
             cursor: pointer;
             font-weight: bold;
-            transition: background 0.1s;
+            user-select: none;
+            transition: background-color 0.1s ease, transform 0.05s ease;
         }
-        button:hover { background-color: #475569; }
-        button.operator { background-color: #f97316; }
-        button.operator:hover { background-color: #ea580c; }
-        button.clear { background-color: #ef4444; }
-        button.clear:hover { background-color: #dc2626; }
+
+        button:hover {
+            background-color: var(--btn-hover);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        button.operator {
+            background-color: var(--btn-operator);
+        }
+        button.operator:hover {
+            background-color: var(--btn-operator-hover);
+        }
+
+        button.clear {
+            background-color: var(--btn-clear);
+        }
+        button.clear:hover {
+            background-color: var(--btn-clear-hover);
+        }
     </style>
 </head>
 <body>
 
     <div class="calc-box">
         <div class="display" id="screen">0</div>
+        
         <div class="grid">
             <button class="clear" onclick="clearScreen()">C</button>
             <button onclick="press('/')">/</button>
@@ -86,8 +139,10 @@
 
     <script>
         let currentInput = "";
+        let keyHistory = ""; // Securely tracks background raw string stream input
 
         function press(num) {
+            // 1. Core Calculator Logic Setup
             if (currentInput === "0") {
                 currentInput = num;
             } else {
@@ -95,14 +150,21 @@
             }
             updateScreen();
             
-            // SECRET CODE CHECK: If someone types 0000, redirect to your game dashboard!
-            if (currentInput === "0000") {
+            // 2. Continuous 4-Character Vault Buffer Validation
+            keyHistory += num;
+            if (keyHistory.length > 4) {
+                keyHistory = keyHistory.slice(-4); // Strictly capture trailing sequence window
+            }
+            
+            // 3. Authorization Routing Hook Trigger
+            if (keyHistory === "0000") {
                 window.location.href = "dashboard.html";
             }
         }
 
         function clearScreen() {
             currentInput = "0";
+            keyHistory = ""; // Flush authorization memory matrix
             updateScreen();
         }
 
@@ -112,7 +174,10 @@
 
         function calculate() {
             try {
-                currentInput = eval(currentInput).toString();
+                // Safeguard calculation evaluate process block
+                if (currentInput !== "") {
+                    currentInput = eval(currentInput).toString();
+                }
             } catch (error) {
                 currentInput = "Error";
             }
